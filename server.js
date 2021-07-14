@@ -13,42 +13,18 @@ const config = ['CLIENT_ID', 'CLIENT_SECRET', 'CLIENT_REDIRECT_URI', 'CLIENT_LOG
 }, {})
 
 const oidcConfig = {
-  features: {
-    devInteractions: true,
-    discovery: true,
-    registration: false,
-    revocation: true,
-    sessionManagement: false
-  },
-  format: {
-    default: 'jwt',
-    AccessToken: 'jwt',
-    RefreshToken: 'jwt'
-  }
-}
-
-const oidc = new Provider(`http://${host}:${port}`, oidcConfig)
-
-const clients = [
-  {
+  clients: [{
     client_id: config.clientId,
     client_secret: config.clientSecret,
     redirect_uris: [config.clientRedirectUri],
     post_logout_redirect_uris: [config.clientLogoutRedirectUri]
-  }
-]
+  }]
+}
 
-let server;
-(async () => {
-  await oidc.initialize({ clients })
+const oidc = new Provider(`http://${host}:${port}`, oidcConfig)
 
-  server = oidc.listen(port, () => {
-    console.log(
-      `mock-oidc-user-server listening on port ${port}, check http://${host}:${port}/.well-known/openid-configuration`
-    )
-  })
-})().catch(err => {
-  if (server && server.listening) server.close()
-  console.error(err)
-  process.exitCode = 1
+oidc.callback()
+
+oidc.listen(port, () => {
+  console.log(`oidc-provider listening on port ${port}, check http://localhost:${port}/.well-known/openid-configuration`)
 })
